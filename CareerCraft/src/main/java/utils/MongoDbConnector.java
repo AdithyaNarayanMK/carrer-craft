@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.bson.Document;
-
+import org.bson.types.ObjectId;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -28,9 +28,10 @@ public class MongoDbConnector
 				continue;
 			JsonArray vals = rawFilter.getAsJsonArray(key);
 			System.out.println("hello world");
-			filters.add(Filters.in("jobData."+key, Arrays.asList(new Gson().fromJson(vals, String[].class))));
+			filters.add(Filters.in(key, Arrays.asList(new Gson().fromJson(vals, String[].class))));
 		}
 		Bson toFilter = Filters.and(filters);
+		System.out.println(toFilter+"\n\n\n\n\n");
 		return toFilter;
 		
 	}
@@ -44,19 +45,25 @@ public class MongoDbConnector
 
 	public static String getDataByID(String collection, int id){
 		MongoCollection col = getConnector(collection);
-		Document query = new Document("id", id);
+		Document query = new Document("_id", id+"");
 		Document result = (Document) col.find(query).first();
 		return result.toJson();
 	}
 
-	public static String getData(String collection, int pageNo, int pageSize, JsonObject rawFilter){
+	public static String getData(String collection, JsonObject rawFilter){
 		System.out.println("hello");
 		MongoCollection col = getConnector(collection);
 		Bson toFilter = null;
 		if(rawFilter.get("isFiltered").getAsString().equals("true"))
 			toFilter = constructFilterObject(rawFilter);
 		System.out.println("This is to check");
-		FindIterable<Document> documents = col.find(toFilter);
+		FindIterable<Document> documents;
+		if(toFilter != null) {
+			documents = col.find(toFilter);
+		}
+		else {
+			documents = col.find();
+		}
 		JsonArray jobs = new JsonArray();
 		for(Document document : documents){
 			jobs.add(document.toJson());

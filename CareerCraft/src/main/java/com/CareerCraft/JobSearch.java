@@ -35,9 +35,8 @@ public class JobSearch extends HttpServlet{
 		}
 		else
 		{
-			int pageSize = 4;
-			Cookie[] cookies = req.getCookies();
-			job = MongoDbConnector.getData("Jobs", Integer.parseInt(CookieOperator.getCookieValue(cookies, "job_page_no")), pageSize, GetData.getJsonDataFromRequest(req));
+		
+			job = MongoDbConnector.getData("Jobs", GetData.getJsonDataFromRequest(req));
 		}
 		res.getWriter().println(job);
 	}
